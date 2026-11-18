@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hardik Kari Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a game's save-file screen. Player card on a neon grid up top,
+   then a mission board (projects), loadout (skills) and campaign log (history).
+   Single dark world by choice: no light theme. */
+:root{
+  color-scheme: dark;
+  --void:#15123a;
+  --panel:#211c52;
+  --panel-2:#2c2668;
+  --line:#463f96;
+  --cyan:#2ef2ff;
+  --magenta:#ff2e88;
+  --amber:#ffd23f;
+  --text:#dcdbf3;
+  --dim:#aeacd8;
+  --display:"Chakra Petch","Trebuchet MS",Verdana,sans-serif;
+  --mono:"Share Tech Mono","Cascadia Mono",Consolas,monospace;
+  --cut:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:linear-gradient(180deg,#1d1850 0%,#15123a 40%,#251446 100%) fixed var(--void);color:var(--text);
+  font-family:var(--display);font-size:17px;line-height:1.55;
+  overflow-x:hidden;
+}
+a{color:var(--cyan)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{width:min(1120px,100% - 40px);margin-inline:auto}
+
+/* scanlines over everything, purely cosmetic */
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:50;
+  background:repeating-linear-gradient(to bottom,rgba(255,255,255,.035) 0 1px,transparent 1px 3px);
+  mix-blend-mode:overlay;
+}
+
+/* ---------- HUD bar ---------- */
+.hud{
+  position:sticky;top:0;z-index:40;
+  background:rgba(21,18,58,.88);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line);
+}
+.hud .wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:10px 0}
+.hud-id{font-family:var(--mono);font-size:.82rem;color:var(--dim);display:flex;gap:10px;align-items:center}
+.pip{width:8px;height:8px;background:var(--cyan);box-shadow:0 0 8px var(--cyan);display:inline-block}
+.hud nav{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.hud nav a,.hud-btn{
+  font-size:.92rem;font-weight:600;text-decoration:none;color:var(--text);
+  padding:6px 12px;border:1px solid transparent;background:none;
+}
+.hud nav a:hover,.hud-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.hud-btn{border-color:var(--line);font-family:var(--mono);font-weight:400}
+
+/* ---------- Player card (hero) ---------- */
+.hero{position:relative;border-bottom:1px solid var(--line);overflow:hidden;background:linear-gradient(180deg,#2a2170 0%,#3b1a68 55%,#1d1850 100%)}
+#grid{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero .wrap{position:relative;padding:72px 0 84px}
+.slot{font-family:var(--mono);color:var(--amber);font-size:.9rem;margin:0 0 6px}
+.name{
+  font-size:clamp(3.1rem,12vw,9rem);font-weight:700;line-height:.9;letter-spacing:-.01em;
+  margin:0;text-transform:uppercase;color:#fff;
+  text-shadow:3px 0 0 var(--magenta),-3px 0 0 var(--cyan);
+  animation:glitch 900ms steps(2,end) 1;
+}
+.name span{display:block}
+@keyframes glitch{
+  0%{text-shadow:14px 0 0 var(--magenta),-14px 0 0 var(--cyan);transform:skewX(-8deg)}
+  25%{text-shadow:-10px 0 0 var(--magenta),10px 0 0 var(--cyan);transform:skewX(5deg)}
+  50%{text-shadow:6px 0 0 var(--magenta),-6px 0 0 var(--cyan);transform:skewX(-2deg)}
+  100%{text-shadow:3px 0 0 var(--magenta),-3px 0 0 var(--cyan);transform:none}
+}
+.class-line{font-size:clamp(1.1rem,2.4vw,1.5rem);font-weight:600;margin:22px 0 10px;color:var(--cyan)}
+.bio{max-width:60ch;margin:0 0 28px;color:var(--text)}
+.actions{display:flex;gap:12px;flex-wrap:wrap}
+.btn{
+  display:inline-block;text-decoration:none;font-weight:700;font-size:1rem;
+  padding:12px 22px;border:0;
+  clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut));
+}
+.btn-main{background:var(--cyan);color:#04121a}
+.btn-main:hover{background:#fff}
+.btn-alt{background:var(--panel-2);color:var(--text);box-shadow:inset 0 0 0 1px var(--line)}
+.btn-alt:hover{color:var(--magenta)}
+
+/* ---------- Sections ---------- */
+section{padding:64px 0}
+h2{
+  font-size:clamp(1.7rem,4vw,2.5rem);font-weight:700;line-height:1.1;margin:0 0 6px;
+  text-wrap:balance;color:#fff;
+}
+h2::before{content:"";display:inline-block;width:.55em;height:.55em;background:var(--magenta);margin-right:.45em;box-shadow:0 0 12px var(--magenta)}
+.sub{color:var(--dim);margin:0 0 26px;max-width:62ch}
+
+/* class select */
+.classes{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px}
+.classes button{
+  background:var(--panel);border:1px solid var(--line);padding:9px 16px;font-weight:600;
+}
+.classes button:hover{border-color:var(--cyan)}
+.classes button[aria-pressed="true"]{background:var(--magenta);border-color:var(--magenta);color:#14020a}
+
+/* mission cards: outer layer is the border colour, inner is the panel */
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.mission{
+  background:var(--line);padding:1px;
+  clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,22px 100%,0 calc(100% - 22px));
+  transition:background .15s;
+}
+.mission:hover,.mission:focus-within{background:var(--cyan)}
+.mission[hidden]{display:none}
+.mission-in{
+  height:100%;background:var(--panel);padding:22px 22px 24px;display:flex;flex-direction:column;gap:10px;
+  clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,22px 100%,0 calc(100% - 22px));
+}
+.m-top{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.status{font-family:var(--mono);font-size:.8rem;padding:2px 8px;border:1px solid currentColor;color:var(--cyan);white-space:nowrap}
+.status.wip{color:var(--amber)}
+.mission h3{font-size:1.3rem;line-height:1.2;margin:0;color:#fff}
+.stack{font-family:var(--mono);font-size:.86rem;color:var(--magenta);margin:0}
+.mission ul{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:6px;font-size:.97rem}
+.mission li::marker{color:var(--cyan)}
+.m-link{margin-top:auto;padding-top:6px;font-weight:600;font-size:.95rem}
+
+/* loadout */
+.loadout{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.kit{border-left:3px solid var(--cyan);background:var(--panel);padding:16px 18px}
+.kit:nth-child(2){border-color:var(--magenta)}
+.kit:nth-child(3){border-color:var(--amber)}
+.kit h3{margin:0 0 10px;font-size:1.05rem;color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.chips li{font-family:var(--mono);font-size:.88rem;padding:4px 10px;background:var(--panel-2);border:1px solid var(--line)}
+
+/* campaign log */
+.log{display:flex;flex-direction:column;gap:0;border-left:1px solid var(--line);margin-left:6px}
+.entry{position:relative;padding:0 0 28px 26px}
+.entry:last-child{padding-bottom:0}
+.entry::before{content:"";position:absolute;left:-6px;top:7px;width:11px;height:11px;background:var(--void);border:2px solid var(--cyan);transform:rotate(45deg)}
+.when{font-family:var(--mono);font-size:.86rem;color:var(--amber);margin:0}
+.entry h3{margin:2px 0 2px;font-size:1.2rem;color:#fff}
+.entry p{margin:0;max-width:64ch}
+.entry .role{color:var(--cyan);font-weight:600}
+
+/* contact */
+.contact{background:var(--panel);border:1px solid var(--line);padding:28px;display:grid;gap:14px}
+.contact dl{display:grid;grid-template-columns:auto 1fr;gap:8px 18px;margin:0;font-family:var(--mono);font-size:.95rem}
+.contact dt{color:var(--dim)}
+.contact dd{margin:0;overflow-wrap:anywhere}
+footer{padding:26px 0 90px;color:var(--dim);font-family:var(--mono);font-size:.82rem;border-top:1px solid var(--line)}
+
+/* ---------- Terminal ---------- */
+#term{
+  position:fixed;left:0;right:0;bottom:0;z-index:45;
+  background:rgba(5,4,14,.97);border-top:2px solid var(--cyan);
+  font-family:var(--mono);font-size:.95rem;
+  transform:translateY(100%);transition:transform .2s ease-out;visibility:hidden;
+}
+#term.open{transform:none;visibility:visible}
+#term .wrap{padding:12px 0 14px}
+.term-bar{display:flex;justify-content:space-between;align-items:center;color:var(--dim);font-size:.82rem;margin-bottom:8px}
+.term-bar button{background:none;border:1px solid var(--line);font-family:var(--mono);font-size:.82rem;padding:2px 10px}
+.term-bar button:hover{border-color:var(--magenta);color:var(--magenta)}
+#term-out{height:min(32vh,240px);overflow-y:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+#term-out .cmd{color:var(--cyan)}
+#term-out .err{color:var(--magenta)}
+.term-line{display:flex;gap:8px;align-items:center;margin-top:8px}
+.term-line label{color:var(--magenta)}
+#term-input{flex:1;min-width:0;background:none;border:0;color:var(--text);font:inherit;caret-color:var(--cyan)}
+#term-input:focus{outline:none}
+
+/* toast */
+#toast{
+  position:fixed;right:20px;top:70px;z-index:60;max-width:min(320px,100% - 40px);
+  background:var(--panel-2);border:1px solid var(--amber);padding:10px 14px;
+  font-size:.92rem;opacity:0;transform:translateX(20px);transition:opacity .25s,transform .25s;pointer-events:none;
+}
+#toast.show{opacity:1;transform:none}
+#toast b{display:block;color:var(--amber);font-family:var(--mono);font-weight:400;font-size:.8rem}
+
+@media (max-width:560px){
+  body{font-size:16px}
+  .hero .wrap{padding:48px 0 60px}
+  .hud .wrap{gap:6px 12px}
+  .hud nav{margin-left:-12px;order:3;width:100%}
+  .hud-btn{margin-left:auto}
+  section{padding:48px 0}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .name{animation:none}
+  #term,#toast{transition:none}
+}
+</style>
+</head>
+<body>
+
+<header class="hud">
+  <div class="wrap">
+    <div class="hud-id"><span class="pip" aria-hidden="true"></span><span>Arlington, TX <span id="clock"></span></span></div>
+    <nav aria-label="Sections">
+      <a href="#missions">Missions</a>
+      <a href="#loadout">Loadout</a>
+      <a href="#log">Log</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <button class="hud-btn" id="term-toggle" type="button" aria-expanded="false" aria-controls="term">&gt;_ Terminal</button>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <canvas id="grid" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <p class="slot">Save file 01 / Player loaded</p>
+      <h1 class="name"><span>Hardik</span><span>Kari</span></h1>
+      <p class="class-line">Software engineer. Security-minded. Game dev on the side.</p>
+      <p class="bio">Computer science student at UT Arlington, graduating Fall 2027. I build Python, Java, and JavaScript applications, from prediction models to desktop tools, and I test what I ship.</p>
+      <div class="actions">
+        <a class="btn btn-main" href="#missions">View missions</a>
+        <a class="btn btn-alt" href="https://github.com/HardikKari">GitHub</a>
+        <a class="btn btn-alt" href="https://www.linkedin.com/in/hardik-kari-865035325">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+
+  <section id="missions">
+    <div class="wrap">
+      <h2>Missions</h2>
+      <p class="sub">Projects I have built. Pick a class to filter the board.</p>
+      <div class="classes" role="group" aria-label="Filter missions by class">
+        <button type="button" data-class="all" aria-pressed="true">All</button>
+        <button type="button" data-class="swe" aria-pressed="false">Software</button>
+        <button type="button" data-class="sec" aria-pressed="false">Security</button>
+        <button type="button" data-class="ai" aria-pressed="false">AI and data</button>
+        <button type="button" data-class="game" aria-pressed="false">Game dev</button>
+      </div>
+
+      <div class="board">
+        <article class="mission" data-tracks="swe sec ai">
+          <div class="mission-in">
+            <div class="m-top"><h3>UNITE: AI-assisted community calendar</h3><span class="status">Cleared</span></div>
+            <p class="stack">Java / JavaFX / OpenAI API / JUnit 5</p>
+            <ul>
+              <li>Rebuilt a JavaFX calendar with persistent events, RSVPs, and AI-assisted event creation.</li>
+              <li>Fixed access-control and storage defects, and replaced plaintext passwords with salted PBKDF2 hashing.</li>
+              <li>Wrote 13 JUnit 5 tests for security, storage, and parsing. Moved AI calls off the UI thread.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="mission" data-tracks="swe ai">
+          <div class="mission-in">
+            <div class="m-top"><h3>NFL game prediction model</h3><span class="status">Cleared</span></div>
+            <p class="stack">Python / Flask / GitHub Actions</p>
+            <ul>
+              <li>Built a Flask site that predicts NFL win probabilities from Elo, scoring margin, rest days, and home field.</li>
+              <li>Backtested with log loss and Brier score. Data refreshes automatically through GitHub Actions.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="mission" data-tracks="swe">
+          <div class="mission-in">
+            <div class="m-top"><h3>Recall: spaced-repetition flashcards</h3><span class="status">Cleared</span></div>
+            <p class="stack">Vanilla JavaScript / no build step</p>
+            <ul>
+              <li>Built a browser flashcard app with no framework.</li>
+              <li>Implemented SM-2 scheduling and multi-format note parsing, both covered by 24 automated tests.</li>
+            </ul>
+            <a class="m-link" href="https://github.com/HardikKari/recall">View the code on GitHub</a>
+          </div>
+        </article>
+
+        <article class="mission" data-tracks="swe">
+          <div class="mission-in">
+            <div class="m-top"><h3>LiteFit: fitness tracker</h3><span class="status">Cleared</span></div>
+            <p class="stack">Python / Flet / JSON storage</p>
+            <ul>
+              <li>Built a tracker for meals, workouts, weight, and reusable routines with local JSON storage.</li>
+              <li>Added editing, date navigation, and automated tests for persistence, validation, and UI callbacks.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="mission" data-tracks="game">
+          <div class="mission-in">
+            <div class="m-top"><h3>First game</h3><span class="status wip">In progress</span></div>
+            <p class="stack">Launching on itch.io</p>
+            <ul>
+              <li>My first published game is on its way. The play link goes here once it is live.</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="loadout">
+    <div class="wrap">
+      <h2>Loadout</h2>
+      <p class="sub">What I work with.</p>
+      <div class="loadout">
+        <div class="kit">
+          <h3>Languages</h3>
+          <ul class="chips"><li>Python</li><li>Java</li><li>JavaScript</li><li>C</li><li>C#</li></ul>
+        </div>
+        <div class="kit">
+          <h3>Data and ML</h3>
+          <ul class="chips"><li>pandas</li><li>scikit-learn</li><li>SQL</li><li>MySQL</li></ul>
+        </div>
+        <div class="kit">
+          <h3>Tools and frameworks</h3>
+          <ul class="chips"><li>Git</li><li>GitHub</li><li>Flask</li><li>Flet</li><li>JavaFX</li><li>Maven</li><li>JUnit 5</li><li>Android Studio</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="log">
+    <div class="wrap">
+      <h2>Campaign log</h2>
+      <p class="sub">Where I have worked and studied.</p>
+      <div class="log">
+        <div class="entry">
+          <p class="when">May 2026 to Aug 2026</p>
+          <h3>Lakeland Pharmacy</h3>
+          <p><span class="role">Software development intern.</span> Built software tools and supported database management for pharmacy operations, working in Python, Java, JavaScript, and MySQL.</p>
+        </div>
+        <div class="entry">
+          <p class="when">Expected Fall 2027</p>
+          <h3>The University of Texas at Arlington</h3>
+          <p><span class="role">B.S. in Computer Science.</span> Coursework in data structures and algorithms, software engineering, artificial intelligence, and game development.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap">
+      <h2>Contact</h2>
+      <p class="sub">Open to software engineering and security internships.</p>
+      <div class="contact">
+        <dl>
+          <dt>Email</dt><dd><a href="mailto:hxk0750@mavs.uta.edu">hxk0750@mavs.uta.edu</a></dd>
+          <dt>GitHub</dt><dd><a href="https://github.com/HardikKari">github.com/HardikKari</a></dd>
+          <dt>LinkedIn</dt><dd><a href="https://www.linkedin.com/in/hardik-kari-865035325">linkedin.com/in/hardik-kari-865035325</a></dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap">Press the ` key to open the terminal. Type help to see commands.</div></footer>
+
+<div id="term" role="region" aria-label="Terminal">
+  <div class="wrap">
+    <div class="term-bar"><span>hardik@portfolio</span><button type="button" id="term-close">Close</button></div>
+    <div id="term-out" aria-live="polite"></div>
+    <div class="term-line"><label for="term-input">&gt;</label><input id="term-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command"></div>
+  </div>
+</div>
+<div id="toast" role="status"></div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- HUD clock: Arlington local time ---- */
+  var clock = document.getElementById('clock');
+  function tick(){
+    try{
+      clock.textContent = new Date().toLocaleTimeString('en-US',{timeZone:'America/Chicago',hour:'2-digit',minute:'2-digit'});
+    }catch(e){ clock.textContent=''; }
+  }
+  tick(); setInterval(tick, 30000);
+
+  /* ---- Hero background: neon perspective grid ---- */
+  var cv = document.getElementById('grid'), cx = cv.getContext('2d'), W=0, H=0, t=0;
+  function size(){
+    var r = cv.getBoundingClientRect(), d = Math.min(window.devicePixelRatio||1, 2);
+    W = r.width; H = r.height; cv.width = W*d; cv.height = H*d; cx.setTransform(d,0,0,d,0,0);
+  }
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    var hz = H*0.52;
+    // horizon glow
+    var g = cx.createLinearGradient(0,hz-120,0,hz+10);
+    g.addColorStop(0,'rgba(255,46,136,0)'); g.addColorStop(1,'rgba(255,46,136,.45)');
+    cx.fillStyle=g; cx.fillRect(0,hz-120,W,130);
+    cx.lineWidth=1;
+    // lines running to the vanishing point
+    var vx=W*0.68, n=26;
+    for(var i=-n;i<=n;i++){
+      cx.strokeStyle='rgba(46,242,255,.22)';
+      cx.beginPath(); cx.moveTo(vx,hz); cx.lineTo(vx+i*(W/9),H); cx.stroke();
+    }
+    // lines moving toward the viewer
+    for(var k=0;k<14;k++){
+      var p=((k+t)%14)/14, y=hz+(H-hz)*p*p;
+      cx.strokeStyle='rgba(46,242,255,'+(0.08+p*0.4)+')';
+      cx.beginPath(); cx.moveTo(0,y); cx.lineTo(W,y); cx.stroke();
+    }
+    cx.strokeStyle='rgba(255,46,136,.9)';
+    cx.beginPath(); cx.moveTo(0,hz); cx.lineTo(W,hz); cx.stroke();
+    // fade the grid under the text column
+    var f=cx.createLinearGradient(0,0,W*0.6,0);
+    f.addColorStop(0,'rgba(33,26,92,.8)'); f.addColorStop(1,'rgba(33,26,92,0)');
+    cx.fillStyle=f; cx.fillRect(0,0,W,H);
+  }
+  function loop(){ t+=0.012; draw(); requestAnimationFrame(loop); }
+  size(); draw();
+  window.addEventListener('resize', function(){ size(); draw(); });
+  if(!reduce) requestAnimationFrame(loop);
+
+  /* ---- Class filter ---- */
+  var buttons = document.querySelectorAll('.classes button');
+  var missions = document.querySelectorAll('.mission');
+  function setClass(c){
+    var found=false;
+    buttons.forEach(function(b){ var on=b.dataset.class===c; if(on) found=true; b.setAttribute('aria-pressed', on?'true':'false'); });
+    if(!found) return false;
+    missions.forEach(function(m){ m.hidden = !(c==='all' || m.dataset.tracks.split(' ').indexOf(c)>-1); });
+    return true;
+  }
+  buttons.forEach(function(b){ b.addEventListener('click', function(){ setClass(b.dataset.class); }); });
+
+  /* ---- Toast ---- */
+  var toast = document.getElementById('toast'), toastT;
+  function achieve(msg){
+    toast.innerHTML=''; var b=document.createElement('b'); b.textContent='Achievement unlocked';
+    toast.appendChild(b); toast.appendChild(document.createTextNode(msg));
+    toast.classList.add('show'); clearTimeout(toastT);
+    toastT=setTimeout(function(){ toast.classList.remove('show'); }, 2600);
+  }
+
+  /* ---- Terminal ---- */
+  var term=document.getElementById('term'), out=document.getElementById('term-out'),
+      input=document.getElementById('term-input'), toggle=document.getElementById('term-toggle'),
+      opened=false;
+  function print(text, cls){
+    var d=document.createElement('div'); if(cls) d.className=cls; d.textContent=text;
+    out.appendChild(d); out.scrollTop=out.scrollHeight;
+  }
+  function go(id){ document.getElementById(id).scrollIntoView({behavior: reduce?'auto':'smooth'}); }
+  var titles = Array.prototype.map.call(missions, function(m){ return m.querySelector('h3').textContent; });
+  var commands = {
+    help: function(){ print('whoami            who this is\nmissions          list projects\nclass <name>      filter: all, swe, sec, ai, game\ngoto <section>    missions, loadout, log, contact\ncontact           how to reach me\nclear             clear the screen\nexit              close the terminal'); },
+    whoami: function(){ print('Hardik Kari. CS student at UT Arlington, graduating Fall 2027.\nSoftware engineer, security-minded, game dev on the side.'); },
+    missions: function(){ print(titles.map(function(s,i){ return '['+(i+1)+'] '+s; }).join('\n')); },
+    'class': function(a){
+      if(setClass(a)){ print('Mission board filtered: '+a); go('missions'); }
+      else print('Unknown class. Try: all, swe, sec, ai, game', 'err');
+    },
+    'goto': function(a){
+      if(['missions','loadout','log','contact'].indexOf(a)>-1){ go(a); print('Moved to '+a+'.'); }
+      else print('Unknown section. Try: missions, loadout, log, contact', 'err');
+    },
+    contact: function(){ print('Email     hxk0750@mavs.uta.edu\nGitHub    github.com/HardikKari\nLinkedIn  linkedin.com/in/hardik-kari-865035325'); },
+    clear: function(){ out.innerHTML=''; },
+    exit: function(){ openTerm(false); },
+    sudo: function(){ print('Permission denied. Nice try.', 'err'); }
+  };
+  function openTerm(on){
+    term.classList.toggle('open', on); toggle.setAttribute('aria-expanded', on?'true':'false');
+    if(on){
+      if(!opened){ opened=true; print('Portfolio terminal ready. Type help to see commands.'); achieve('Found the terminal.'); }
+      input.focus();
+    } else { toggle.focus(); }
+  }
+  toggle.addEventListener('click', function(){ openTerm(!term.classList.contains('open')); });
+  document.getElementById('term-close').addEventListener('click', function(){ openTerm(false); });
+  input.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){ openTerm(false); return; }
+    if(e.key!=='Enter') return;
+    var raw=input.value.trim(); input.value=''; if(!raw) return;
+    print('> '+raw, 'cmd');
+    var parts=raw.toLowerCase().split(/\s+/), fn=commands.hasOwnProperty(parts[0])?commands[parts[0]]:null;
+    if(fn) fn(parts[1]||''); else print('Command not found: '+parts[0]+'. Type help to see commands.', 'err');
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='`' && !e.ctrlKey && !e.metaKey){ e.preventDefault(); openTerm(!term.classList.contains('open')); }
+  });
+})();
+</script>
+</body>
+</html>
